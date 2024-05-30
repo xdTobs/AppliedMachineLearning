@@ -28,8 +28,8 @@ class LoanForest(DataLoaderInterface):
         for column in string_columns:
             le = LabelEncoder()
             self.data[column] = le.fit_transform(self.data[column])
-        
-        
+        self.data = self.data.iloc[1:]
+       
     def get_data(self) -> pd.DataFrame:
         return self.data
 
@@ -52,13 +52,15 @@ class LoanNeural(DataLoaderInterface):
         self.balanced_data : pd.DataFrame = pd.concat([class_0, class_1_upsampled])
     
     def get_data(self) -> pd.DataFrame:
+        return self.data
+    
+    def get_balanced_data(self) -> pd.DataFrame:
         return self.balanced_data
     
     def scale_data(self, data : pd.DataFrame):
         self.scaler = StandardScaler()
         data.iloc[:, 1:] = self.scaler.fit_transform(data.iloc[:, 1:])
         return data
-    
 
 class CreditCard(DataLoaderInterface):
     def __init__(self):
@@ -96,9 +98,12 @@ def split_variables_and_target(data : pd.DataFrame) -> tuple[np.ndarray, np.ndar
         y = data['Class']
         return X, y
 
-def split_data(data : pd.DataFrame, test_size : float = 0.2) -> list:
+def split_data_4(data : pd.DataFrame, test_size : float = 0.2) -> list:
         X, y = split_variables_and_target(data)
         return train_test_split(X, y, test_size=test_size, random_state=42)
+    
+def split_data_2(data : pd.DataFrame, test_size : float = 0.2) -> tuple:
+        return train_test_split(data, test_size=test_size, random_state=42)
     
 def get_data_loaders(X_train, X_test, y_train, y_test, batch_size=64):
     train_loader = DataLoader(list(zip(X_train, y_train)), batch_size=batch_size, shuffle=True)
