@@ -1,3 +1,4 @@
+# Made by: Tobias Schønau s224327
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np

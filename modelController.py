@@ -1,14 +1,17 @@
+# Made by: Tobias Schønau s224327
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 import numpy as np
+import pandas as pd
+import dataloader
 
 class ModelController():
     def __init__(self, model):
         self.model = model
         
-    def predict(self, X, y, k_fold_split: int = 5):
+    def predict(self, data, k_fold_split: int = 5):
         
         mse_scores = []
         accuracy_scores = []
@@ -24,9 +27,18 @@ class ModelController():
         successful_mean_values = []
         kf = KFold(n_splits=k_fold_split, shuffle=True)
         
-        for train_index, test_index in kf.split(X):
-            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        for train_index, test_index in kf.split(data):
+            train, test = data.iloc[train_index], data.iloc[test_index]
+            
+            # We have low amount of class 1 samples, so we will upsample them in the training data
+            class_1 = train[train['Class'] == 1]
+            class_0 = train[train['Class'] == 0]
+            class_1_upsampled = class_1.sample(n=len(class_0), replace=True, random_state=42)
+            balanced_train : pd.DataFrame = pd.concat([class_0, class_1_upsampled])
+
+            X_train, y_train = dataloader.split_variables_and_target(balanced_train)
+            X_test, y_test = dataloader.split_variables_and_target(test)
+                        
             # Train a random forest classifier
             self.model.fit(X_train, y_train)
             # Test on the X_test data
